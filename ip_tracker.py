@@ -1,13 +1,14 @@
 import subprocess
 import json
 import argparse
+import ipaddress
 
 VERDE = "\033[32m"
 AMARILLO = "\033[33m"
 RESET = "\033[0m"
 
 parser = argparse.ArgumentParser(description="Consulta información sobre una dirección IP usando ip.guide")
-parser.add_argument("--ip", help="Dirección IP a consultar")
+parser.add_argument("-i","--ip", help="Dirección IP a consultar")
 args = parser.parse_args()
 
 def banner():
@@ -23,8 +24,16 @@ def banner():
     print(rf" ###########################################")
     print(rf"{AMARILLO}      IPTRACKER - Rastrea cualquier IP         {RESET}")
     print(rf"{AMARILLO}      Versión 1.0 - ¡Sigue el rastro!          {RESET}")
+
+
     
-    
+def validar_ip(ip):
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
 
 def get_data_from_api(ip):
 
@@ -37,13 +46,18 @@ def get_data_from_api(ip):
         return {"error": str(e)}
     except json.JSONDecodeError:
         return {"error": "Error al decodificar la respuesta JSON"}
+    
 
 if __name__ == "__main__":    
     banner()
-    data = get_data_from_api(args.ip)
+    if validar_ip(args.ip):
 
-    if "location" in data:
-        location = data["location"]
-        print(json.dumps(location, indent=4))
+        data = get_data_from_api(args.ip)
+
+        if "location" in data:
+            location = data["location"]
+            print(json.dumps(location, indent=4))
+        else:
+            print("No se encontraron datos de ubicación.")
     else:
-        print("No se encontraron datos de ubicación.")
+        print("error : Dirección IP no válida") 
